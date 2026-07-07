@@ -17,7 +17,7 @@ public class App extends Application {
         com.tradevision.database.DatabaseManager.getInstance();
         
         // Base resolution optimized for laptop screens (1150x650) to ensure zero taskbar clipping
-        scene = new Scene(loadFXML("views/Login"), 1150, 650);
+        scene = new Scene(loadFXML("views/Intro"), 1150, 650);
         scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
         
         stage.setScene(scene);

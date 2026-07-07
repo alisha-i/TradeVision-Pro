@@ -28,9 +28,7 @@ public class LoginController {
 
     @FXML
     public void initialize() {
-        usernameField.setText("alisha_i");
-        passwordField.setText("ale@sha07");
-        javafx.application.Platform.runLater(() -> handleLogin(new ActionEvent()));
+        // Removed auto-login and default text
     }
 
     @FXML
