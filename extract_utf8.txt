@@ -1,0 +1,214 @@
+TradeVision Pro - Software Requirements & Project Blueprint
+Project Type: 
+Professional TradingView-Inspired Trading Analysis & Paper Trading Platform
+Technology Stack: 
+Java, JavaFX, MySQL, JDBC, REST APIs, MVC Architecture
+Project Level: 
+Advanced SDA / Portfolio / Final Year Project Foundation
+1. Problem Statement
+Most beginner traders lack access to professional market analysis platforms. Existing platforms are often expensive or difficult to understand. The goal of TradeVision Pro is to provide a professional trading analysis platform with advanced charting, indicators, paper trading, strategy testing, alerts, and portfolio management.
+2. Project Objectives
+Build a TradingView-inspired desktop application.
+Provide interactive market charts.
+Implement paper trading without real money.
+Provide technical indicators and drawing tools.
+Allow users to test strategies on historical data.
+Generate performance analytics and trading reports.
+3. User Roles
+Trader:
+- Analyze markets
+- Create watchlists
+- Place paper trades
+- Test strategies
+- Manage portfolio
+Administrator:
+- Manage users
+- Monitor system activity
+- View reports
+- Manage market assets and alerts
+4. Functional Requirements
+FR1 User Registration
+FR2 User Login
+FR3 Market Search
+FR4 Watchlist Management
+FR5 Interactive Charts
+FR6 Technical Indicators
+FR7 Drawing Tools
+FR8 Alerts
+FR9 Paper Trading
+FR10 Portfolio Management
+FR11 Trade History
+FR12 Strategy Tester
+FR13 Market Replay
+FR14 News Feed
+FR15 AI Trading Assistant
+FR16 Report Generation
+FR17 User Profile Management
+FR18 Admin Dashboard
+FR19 Data Export
+FR20 Performance Analytics
+5. Non-Functional Requirements
+Performance
+Scalability
+Reliability
+Security
+Usability
+Availability
+Maintainability
+Responsiveness
+6. Core Modules
+Authentication Module
+Market Explorer
+Charting Engine
+Technical Indicators
+Drawing Tools
+Watchlists
+Alert Engine
+Paper Trading Engine
+Portfolio Dashboard
+Strategy Tester
+Market Replay
+Trading Journal
+News Feed
+AI Assistant
+Admin Dashboard
+7. Use Cases (Major)
+1. Register Account
+2. Login
+3. Search Asset
+4. Add Asset To Watchlist
+5. Remove Asset From Watchlist
+6. Open Chart
+7. Change Timeframe
+8. Add Indicator
+9. Remove Indicator
+10. Draw Trendline
+11. Draw Fibonacci
+12. Create Alert
+13. Buy Asset
+14. Sell Asset
+15. View Portfolio
+16. View Trade History
+17. Backtest Strategy
+18. Start Market Replay
+19. Record Trade Journal
+20. Generate Reports
+21. Manage Users
+22. Analyze Asset Using AI
+8. Technical Indicators
+Simple Moving Average (SMA)
+Exponential Moving Average (EMA)
+Relative Strength Index (RSI)
+MACD
+Bollinger Bands
+Average True Range (ATR)
+VWAP
+Stochastic RSI
+Volume Profile
+OBV
+9. Drawing Tools
+Trend Line
+Horizontal Line
+Vertical Line
+Rectangle Tool
+Support/Resistance Zones
+Fibonacci Retracement
+Text Notes
+Price Markers
+10. Paper Trading Engine
+Initial Virtual Balance = $100,000
+Market Orders
+Buy Orders
+Sell Orders
+Profit/Loss Calculation
+Open Positions
+Closed Positions
+Trade History
+11. Portfolio Dashboard
+Current Balance
+Portfolio Value
+Open Positions
+Closed Positions
+ROI
+Win Rate
+Profit Factor
+Average Trade
+Maximum Drawdown
+12. Strategy Tester
+Create Trading Rules
+Run Historical Backtests
+Analyze Performance
+Evaluate ROI
+Generate Reports
+13. Market Replay
+Replay Historical Candles
+Simulate Live Market Conditions
+Practice Trading
+Evaluate Trading Decisions
+14. AI Trading Assistant
+Analyze Selected Asset
+Identify Trend
+Detect Support and Resistance
+Provide Buy/Sell/Hold Suggestions
+Generate Market Summary
+15. Database Design
+Users
+Assets
+Watchlists
+Alerts
+Trades
+Orders
+Portfolio
+Indicators
+Strategies
+News
+Journal
+Notifications
+Reports
+AdminLogs
+Settings
+16. Design Patterns
+Singleton Pattern -> Database Manager
+Observer Pattern -> Alerts & Price Updates
+Factory Pattern -> Indicators & Assets
+Strategy Pattern -> Trading Strategies
+MVC Pattern -> Overall Architecture
+17. Development Phases
+Phase 1: Authentication + Database
+Phase 2: Charts + Market Explorer
+Phase 3: Watchlists + Indicators
+Phase 4: Paper Trading
+Phase 5: Portfolio Dashboard
+Phase 6: Alerts
+Phase 7: Strategy Tester
+Phase 8: Market Replay
+Phase 9: AI Assistant
+Phase 10: Deployment & Testing
+18. Future Enhancements
+Real Broker Integration
+Mobile App Version
+Cloud Synchronization
+Advanced AI Models
+Social Trading
+Copy Trading
+Trading Competitions
+19. Expected Learning Outcomes
+Advanced Java Development
+JavaFX UI Design
+Database Design
+Software Architecture
+Design Patterns
+Financial Systems Development
+Data Visualization
+API Integration
+20. Final Deliverables
+SRS Document
+Use Case Diagram
+Domain Model
+SSDs
+Sequence Diagrams
+Class Diagram
+Database ERD
+JavaFX Prototype
+Fully Functional Application
+Final Presentation

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- Load TradingView Lightweight Charts locally -->
+    <script src="lightweight-charts.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0B0F17; /* Deep Carbon Dark Theme */
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        #chart-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        #drawing-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none; /* Let clicks pass through to chart */
+            z-index: 20;
+        }
+        /* Custom Neon Candle Countdown Timer Overlay */
+        #candle-timer {
+            position: absolute;
+            bottom: 25px;
+            right: 70px;
+            background: #161B22;
+            border: 1px solid #00F0FF;
+            color: #00F0FF;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 30;
+            box-shadow: 0 0 10px rgba(0,240,255,0.2);
+            pointer-events: none;
+        }
+        /* Light Theme Overrides */
+        body.light-theme {
+            background-color: #F6F8FA;
+        }
+        body.light-theme #candle-timer {
+            background: #ffffff;
+            border-color: #0366D6;
+            color: #0366D6;
+            box-shadow: 0 0 10px rgba(3,102,214,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div id="chart-container">
+        <svg id="drawing-layer"></svg>
+        <div id="candle-timer">Candle Close: --:--</div>
+    </div>
+    <div id="context-menu" style="display:none; position:absolute; z-index:100; background:#161B22; border:1px solid #30363D; border-radius:8px; padding:6px 0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 13px; box-shadow: 0 8px 16px rgba(0,0,0,0.4);"></div>
+    <script>
+        let chart = null;
+        let candlestickSeries = null;
+        let currentTheme = 'dark';
+        
+        // Drawing tools state
+        let currentTool = 'crosshair'; // crosshair, line, text, rect, fibo
+        let markers = [];
+        let priceLines = [];
+        let countdownLine = null;
+        
+        // Custom Drawing Engine
+        let drawings = []; // { type, t1, p1, t2, p2, color }
+        let isDrawing = false;
+        let drawingStart = null;
+        let tempDrawing = null;
+
+        // Theme Definitions
+        const darkTheme = {
+            chart: {
+                layout: { background: { type: 'solid', color: '#0B0F17' }, textColor: '#F0F6FC', },
+                grid: { vertLines: { color: '#1F2937' }, horzLines: { color: '#1F2937' }, },
+                timeScale: { borderColor: '#30363D', timeVisible: true, secondsVisible: true }
+            },
+            series: {
+                upColor: '#2EA043', downColor: '#F85149', borderVisible: false,
+                wickUpColor: '#2EA043', wickDownColor: '#F85149'
+            }
+        };
+
+        const lightTheme = {
+            chart: {
+                layout: { background: { type: 'solid', color: '#F6F8FA' }, textColor: '#24292E', },
+                grid: { vertLines: { color: '#E1E4E8' }, horzLines: { color: '#E1E4E8' }, },
+                timeScale: { borderColor: '#E1E4E8', timeVisible: true, secondsVisible: true }
+            },
+            series: {
+                upColor: '#28A745', downColor: '#D73A49', borderVisible: false,
+                wickUpColor: '#28A745', wickDownColor: '#D73A49'
+            }
+        };
+
+        function initChart() {
+            var container = document.getElementById('chart-container');
+            
+            var chartOptions = {
+                width: container.clientWidth || 800,
+                height: container.clientHeight || 600,
+                crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+                rightPriceScale: { borderColor: '#30363D' },
+                timeScale: { timeVisible: true, secondsVisible: true, borderColor: '#30363D' }
+            };
+            Object.assign(chartOptions, darkTheme.chart);
+            
+            chart = LightweightCharts.createChart(container, chartOptions);
+
+            candlestickSeries = chart.addCandlestickSeries(darkTheme.series);
+            window.addEventListener('resize', function() {
+                if (chart) chart.applyOptions({ width: window.innerWidth, height: window.innerHeight });
+                updateDrawings();
+            });
+
+            chart.timeScale().subscribeVisibleTimeRangeChange(updateDrawings);
+            chart.timeScale().subscribeVisibleLogicalRangeChange(updateDrawings);
+
+            chart.subscribeClick((param) => {
+                if (!param || param.point === undefined || param.logical === undefined) return;
+                
+                const price = candlestickSeries.coordinateToPrice(param.point.y);
+                if (price === null) return;
+
+                if (currentTool === 'text') {
+                    let userText = prompt("Enter Note Text:");
+                    if (userText) {
+                        drawings.push({ type: 'text-custom', l1: param.logical, p1: price, text: userText });
+                        updateDrawings();
+                    }
+                    currentTool = 'crosshair';
+                } else if (currentTool === 'rect' || currentTool === 'fibo' || currentTool === 'line') {
+                    if (!isDrawing) {
+                        isDrawing = true;
+                        drawingStart = { logical: param.logical, price: price };
+                        tempDrawing = null;
+                    } else {
+                        drawings.push({
+                            type: currentTool,
+                            l1: drawingStart.logical,
+                            p1: drawingStart.price,
+                            l2: param.logical,
+                            p2: price,
+                            color: currentTheme === 'dark' ? '#00F0FF' : '#0366D6'
+                        });
+                        isDrawing = false;
+                        drawingStart = null;
+                        tempDrawing = null;
+                        updateDrawings();
+                        currentTool = 'crosshair';
+                    }
+                }
+            });
+
+            let crosshairParam = null;
+            chart.subscribeCrosshairMove((param) => {
+                crosshairParam = param;
+                if (isDrawing && drawingStart && param && param.logical !== undefined) {
+                    const price = candlestickSeries.coordinateToPrice(param.point.y);
+                    if (price !== null) {
+                        tempDrawing = {
+                            type: currentTool,
+                            l1: drawingStart.logical,
+                            p1: drawingStart.price,
+                            l2: param.logical,
+                            p2: price,
+                            color: currentTheme === 'dark' ? '#00F0FF' : '#0366D6',
+                            isTemp: true
+                        };
+                        updateDrawings();
+                    }
+                }
+            });
+
+            document.getElementById('chart-container').addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                
+                let clickedIndicator = null;
+                if (crosshairParam && crosshairParam.point) {
+                    const mousePrice = candlestickSeries.coordinateToPrice(crosshairParam.point.y);
+                    if (mousePrice !== null && crosshairParam.seriesData) {
+                        crosshairParam.seriesData.forEach((value, series) => {
+                            if (series !== candlestickSeries) {
+                                let val = value.value !== undefined ? value.value : value;
+                                if (Math.abs(val - mousePrice) < (mousePrice * 0.005)) {
+                                    for (let name in activeIndicators) {
+                                        if (activeIndicators[name] === series) {
+                                            clickedIndicator = name;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+
+                const menu = document.getElementById('context-menu');
+                menu.innerHTML = '';
+                
+                let resetItem = document.createElement('div');
+                resetItem.textContent = 'Reset Price Scale';
+                resetItem.style.padding = '8px 20px';
+                resetItem.style.color = currentTheme === 'dark' ? '#F0F6FC' : '#24292E';
+                resetItem.style.cursor = 'pointer';
+                resetItem.onmouseover = () => resetItem.style.background = currentTheme === 'dark' ? '#212631' : '#E1E4E8';
+                resetItem.onmouseout = () => resetItem.style.background = 'transparent';
+                resetItem.onclick = function() {
+                    chart.timeScale().fitContent();
+                    chart.priceScale('right').applyOptions({ autoScale: true });
+                    menu.style.display = 'none';
+                };
+                menu.appendChild(resetItem);
+
+                if (clickedIndicator) {
+                    let removeItem = document.createElement('div');
+                    removeItem.textContent = 'Remove ' + clickedIndicator;
+                    removeItem.style.padding = '8px 20px';
+                    removeItem.style.color = '#F85149';
+                    removeItem.style.cursor = 'pointer';
+                    removeItem.onmouseover = () => removeItem.style.background = currentTheme === 'dark' ? '#212631' : '#E1E4E8';
+                    removeItem.onmouseout = () => removeItem.style.background = 'transparent';
+                    removeItem.onclick = function() {
+                        chart.removeSeries(activeIndicators[clickedIndicator]);
+                        delete activeIndicators[clickedIndicator];
+                        menu.style.display = 'none';
+                    };
+                    menu.appendChild(removeItem);
+                }
+
+                menu.style.left = e.clientX + 'px';
+                menu.style.top = e.clientY + 'px';
+                menu.style.background = currentTheme === 'dark' ? '#161B22' : '#ffffff';
+                menu.style.borderColor = currentTheme === 'dark' ? '#30363D' : '#E1E4E8';
+                menu.style.display = 'block';
+            });
+
+            document.addEventListener('click', function(e) {
+                document.getElementById('context-menu').style.display = 'none';
+            });
+        }
+        
+        function enableCrosshair() { currentTool = 'crosshair'; }
+        function enableLineTool() { currentTool = 'line'; }
+        function enableTextTool() { currentTool = 'text'; }
+        function enableRectangleTool() { currentTool = 'rect'; }
+        function enableFibonacciTool() { currentTool = 'fibo'; }
+        
+        function clearDrawings() {
+            markers = [];
+            candlestickSeries.setMarkers([]);
+            priceLines.forEach(pl => candlestickSeries.removePriceLine(pl));
+            priceLines = [];
+            drawings = [];
+            isDrawing = false;
+            drawingStart = null;
+            tempDrawing = null;
+            updateDrawings();
+        }
+        
+        function updateDrawings() {
+            if (!chart || !candlestickSeries) return;
+            const svg = document.getElementById('drawing-layer');
+            if (!svg) return;
+            
+            svg.innerHTML = '';
+            const timeScale = chart.timeScale();
+            let allDrawings = [...drawings];
+            if (tempDrawing) allDrawings.push(tempDrawing);
+            
+            allDrawings.forEach(d => {
+                let x1, x2, y1, y2;
+                if (d.t1 !== undefined) {
+                    x1 = timeScale.timeToCoordinate(d.t1);
+                    x2 = timeScale.timeToCoordinate(d.t2);
+                } else {
+                    x1 = timeScale.logicalToCoordinate(d.l1);
+                    if (d.l2 !== undefined) {
+                        x2 = timeScale.logicalToCoordinate(d.l2);
+                    }
+                }
+                
+                y1 = candlestickSeries.priceToCoordinate(d.p1);
+                if (d.p2 !== undefined) {
+                    y2 = candlestickSeries.priceToCoordinate(d.p2);
+                }
+                
+                if (x1 === null || y1 === null) return;
+                
+                if (d.type === 'rect' || d.type === 'ict-fvg' || d.type === 'ict-ob') {
+                    if (x2 === null || y2 === null) return;
+                    let left = Math.min(x1, x2);
+                    let top = Math.min(y1, y2);
+                    let width = Math.abs(x2 - x1);
+                    let height = Math.abs(y2 - y1);
+                    
+                    if (d.type === 'ict-fvg' || d.type === 'ict-ob') {
+                        width = width > 0 ? width : 40; 
+                    }
+                    
+                    let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    rect.setAttribute('x', left);
+                    rect.setAttribute('y', top);
+                    rect.setAttribute('width', width);
+                    rect.setAttribute('height', height);
+                    
+                    let fillColor = 'rgba(0, 240, 255, 0.2)'; 
+                    let strokeColor = '#00F0FF';
+                    
+                    // DEEPER, RICHER INDICATOR COLORS PER USER REQUEST
+                    if (d.type === 'ict-fvg') {
+                        fillColor = 'rgba(109, 40, 217, 0.45)'; // Deep Velvet Purple FVG
+                        strokeColor = '#8B5CF6';
+                    }
+                    if (d.type === 'ict-ob') {
+                        fillColor = 'rgba(2, 132, 199, 0.45)'; // Deep Ocean Blue OB
+                        strokeColor = '#00F0FF';
+                    }
+                    
+                    rect.setAttribute('fill', fillColor);
+                    rect.setAttribute('stroke', strokeColor);
+                    rect.setAttribute('stroke-width', '2');
+                    svg.appendChild(rect);
+                } else if (d.type === 'fibo') {
+                    if (y2 === null) return;
+                    let left = Math.min(x1, x2);
+                    let right = Math.max(x1, x2);
+                    
+                    const levels = [
+                        {val: 0, color: '#8B949E'}, 
+                        {val: 0.236, color: '#F85149'}, 
+                        {val: 0.382, color: '#2EA043'}, 
+                        {val: 0.5, color: '#E08A22'}, 
+                        {val: 0.618, color: '#00F0FF'}, 
+                        {val: 0.786, color: '#8B5CF6'}, 
+                        {val: 1, color: '#8B949E'}
+                    ];
+                    const diff = d.p2 - d.p1;
+                    
+                    levels.forEach(level => {
+                        let levelPrice = d.p1 + (diff * level.val);
+                        let y = candlestickSeries.priceToCoordinate(levelPrice);
+                        if (y !== null) {
+                            let line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            line.setAttribute('x1', left);
+                            line.setAttribute('y1', y);
+                            line.setAttribute('x2', right);
+                            line.setAttribute('y2', y);
+                            line.setAttribute('stroke', level.color);
+                            if (d.isTemp) {
+                                line.setAttribute('stroke-dasharray', '5,5');
+                            } else {
+                                line.setAttribute('stroke-dasharray', '4');
+                            }
+                            line.setAttribute('stroke-width', '1');
+                            svg.appendChild(line);
+                            
+                            let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                            text.setAttribute('x', left);
+                            text.setAttribute('y', y - 4);
+                            text.setAttribute('fill', level.color);
+                            text.setAttribute('font-size', '11px');
+                            text.setAttribute('font-family', 'sans-serif');
+                            text.textContent = level.val.toString();
+                            svg.appendChild(text);
+                        }
+                    });
+                } else if (d.type === 'line') {
+                    if (x2 === null || y2 === null) return;
+                    let line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', x1);
+                    line.setAttribute('y1', y1);
+                    line.setAttribute('x2', x2);
+                    line.setAttribute('y2', y2);
+                    line.setAttribute('stroke', currentTheme === 'dark' ? '#F0F6FC' : '#24292E');
+                    line.setAttribute('stroke-width', '2');
+                    if (d.isTemp) {
+                        line.setAttribute('stroke-dasharray', '5,5');
+                    }
+                    svg.appendChild(line);
+                } else if (d.type === 'text-custom') {
+                    let textElem = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    textElem.setAttribute('x', x1);
+                    textElem.setAttribute('y', y1 - 10);
+                    textElem.setAttribute('fill', currentTheme === 'dark' ? '#F0F6FC' : '#24292E');
+                    textElem.setAttribute('font-size', '14px');
+                    textElem.setAttribute('font-family', 'sans-serif');
+                    textElem.textContent = d.text;
+                    svg.appendChild(textElem);
+                }
+            });
+        }
+        
+        function resizeChart(w, h) {
+            if (chart) {
+                chart.applyOptions({ width: w, height: h });
+            }
+        }
+
+        function setChartData(jsonData, symbol) {
+            try {
+                const data = JSON.parse(jsonData);
+                window.chartRawData = data;
+                candlestickSeries.setData(data);
+                chart.timeScale().fitContent();
+            } catch(e) {
+                console.error("Failed to parse chart data", e);
+            }
+        }
+
+        function updateChartData(jsonData, countdown) {
+            try {
+                const data = JSON.parse(jsonData);
+                candlestickSeries.update(data);
+                
+                if (window.chartRawData) {
+                    let last = window.chartRawData[window.chartRawData.length - 1];
+                    if (last.time === data.time) {
+                        window.chartRawData[window.chartRawData.length - 1] = data;
+                    } else {
+                        window.chartRawData.push(data);
+                    }
+                    
+                    for (let name in activeIndicators) {
+                        if (name.startsWith("EMA")) {
+                            let period = parseInt(name.split(" ")[1]);
+                            activeIndicators[name].setData(calculateEMA(window.chartRawData, period));
+                        }
+                    }
+                }
+                
+                if (countdown) {
+                    let timerElem = document.getElementById('candle-timer');
+                    if (timerElem) {
+                        timerElem.textContent = 'Candle Close: ' + countdown;
+                    }
+                    
+                    if (!countdownLine) {
+                        countdownLine = candlestickSeries.createPriceLine({
+                            price: data.close,
+                            color: '#00F0FF',
+                            lineWidth: 1,
+                            lineStyle: LightweightCharts.LineStyle.Dotted,
+                            axisLabelVisible: true,
+                            title: countdown
+                        });
+                    } else {
+                        countdownLine.applyOptions({
+                            price: data.close,
+                            title: countdown
+                        });
+                    }
+                }
+            } catch(e) {
+                console.error("Failed to parse chart update data", e);
+            }
+        }
+
+        let activeIndicators = {};
+
+        function calculateEMA(data, period) {
+            let emaData = [];
+            let k = 2 / (period + 1);
+            let ema = data[0].close;
+            for(let i=0; i<data.length; i++) {
+                if(i===0) { ema = data[i].close; }
+                else { ema = (data[i].close * k) + (ema * (1 - k)); }
+                emaData.push({ time: data[i].time, value: ema });
+            }
+            return emaData;
+        }
+
+        function scanICT(data) {
+            for(let i=2; i<data.length; i++) {
+                let c1 = data[i-2];
+                let c2 = data[i-1];
+                let c3 = data[i];
+                
+                if (c1.high < c3.low) {
+                    drawings.push({ type: 'ict-fvg', t1: c1.time, p1: c1.high, t2: c3.time, p2: c3.low });
+                }
+                if (c1.low > c3.high) {
+                    drawings.push({ type: 'ict-fvg', t1: c1.time, p1: c1.low, t2: c3.time, p2: c3.high });
+                }
+                
+                if (c1.close < c1.open && c2.close > c2.open && c3.close > c3.open && c3.close > c1.high) {
+                    drawings.push({ type: 'ict-ob', t1: c1.time, p1: c1.high, t2: c3.time, p2: c1.low });
+                }
+                if (c1.close > c1.open && c2.close < c2.open && c3.close < c3.open && c3.close < c1.low) {
+                    drawings.push({ type: 'ict-ob', t1: c1.time, p1: c1.high, t2: c3.time, p2: c1.low });
+                }
+            }
+            updateDrawings();
+        }
+
+        function toggleIndicator(name, isSelected) {
+            if (!window.chartRawData) return;
+            const data = window.chartRawData;
+            
+            if (name.startsWith("EMA")) {
+                let period = parseInt(name.split(" ")[1]);
+                if (isSelected) {
+                    // DEEPER, RICHER, THICKER INDICATOR LINES PER USER REQUEST
+                    let color = '#0055FF'; // Deep Electric Blue
+                    if (period === 100) color = '#D97706'; // Deep Amber Gold
+                    else if (period === 150) color = '#6D28D9'; // Deep Royal Purple
+                    else if (period === 200) color = '#B91C1C'; // Deep Crimson Red
+                    
+                    let series = chart.addLineSeries({ color: color, lineWidth: 3 });
+                    series.setData(calculateEMA(data, period));
+                    activeIndicators[name] = series;
+                } else {
+                    if(activeIndicators[name]) {
+                        chart.removeSeries(activeIndicators[name]);
+                        delete activeIndicators[name];
+                    }
+                }
+            } else if (name === "ICT (FVG + OB)") {
+                if (isSelected) {
+                    scanICT(data);
+                    activeIndicators['ICT'] = true;
+                } else {
+                    drawings = drawings.filter(d => d.type !== 'ict-fvg' && d.type !== 'ict-ob');
+                    updateDrawings();
+                    activeIndicators['ICT'] = false;
+                }
+            }
+        }
+
+        function applyTheme(theme) {
+            currentTheme = theme;
+            if (theme === 'light') {
+                document.body.classList.add('light-theme');
+                document.body.style.backgroundColor = '#F6F8FA';
+                chart.applyOptions(lightTheme.chart);
+                candlestickSeries.applyOptions(lightTheme.series);
+            } else {
+                document.body.classList.remove('light-theme');
+                document.body.style.backgroundColor = '#0B0F17';
+                chart.applyOptions(darkTheme.chart);
+                candlestickSeries.applyOptions(darkTheme.series);
+            }
+            const menu = document.getElementById('context-menu');
+            if(menu) {
+                menu.style.background = currentTheme === 'dark' ? '#161B22' : '#ffffff';
+                menu.style.borderColor = currentTheme === 'dark' ? '#30363D' : '#E1E4E8';
+            }
+        }
+
+        function changeChartType(type) {
+            if (type === 'Candles') {
+                chart.removeSeries(candlestickSeries);
+                candlestickSeries = chart.addCandlestickSeries(currentTheme === 'dark' ? darkTheme.series : lightTheme.series);
+                if(window.chartRawData) candlestickSeries.setData(window.chartRawData);
+            } else if (type === 'Bars') {
+                chart.removeSeries(candlestickSeries);
+                candlestickSeries = chart.addBarSeries({
+                    upColor: currentTheme === 'dark' ? '#2EA043' : '#28A745',
+                    downColor: currentTheme === 'dark' ? '#F85149' : '#D73A49',
+                });
+                if(window.chartRawData) candlestickSeries.setData(window.chartRawData);
+            }
+        }
+
+        // --- NEW FULLY FUNCTIONAL DYNAMIC CUSTOMIZATION API FOR SETTINGS DIALOG ---
+        function setCandleColors(up, down) {
+            if (candlestickSeries) {
+                candlestickSeries.applyOptions({
+                    upColor: up, wickUpColor: up,
+                    downColor: down, wickDownColor: down
+                });
+            }
+        }
+
+        function setChartBackground(color) {
+            if (chart) {
+                document.body.style.backgroundColor = color;
+                chart.applyOptions({ layout: { background: { type: 'solid', color: color } } });
+            }
+        }
+
+        function toggleWatermark(visible, text) {
+            if (chart) {
+                chart.applyOptions({
+                    watermark: {
+                        visible: visible,
+                        text: text,
+                        fontSize: 28,
+                        color: currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+                        horzAlign: 'center',
+                        vertAlign: 'center'
+                    }
+                });
+            }
+        }
+
+        window.onload = initChart;
+    </script>
+</body>
+</html>

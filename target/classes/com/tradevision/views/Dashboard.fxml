@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.web.WebView?>
+
+<BorderPane fx:id="rootPane" stylesheets="@../styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.tradevision.controllers.DashboardController">
+
+    <!-- TOP DYNAMIC BAR -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="8" styleClass="top-bar">
+            <padding>
+                <Insets top="8" right="10" bottom="8" left="10"/>
+            </padding>
+            
+            <!-- Logo Section -->
+            <HBox alignment="CENTER_LEFT" spacing="6" style="-fx-cursor: hand;" minWidth="-Infinity">
+                <SVGPath content="M 0 0 L 10 10 L 20 0 Z M 0 20 L 10 10 L 20 20 Z" style="-fx-fill: -accent-cyan;" strokeWidth="2"/>
+                <Label text="TradeVision Pro" style="-fx-font-size: 16px; -fx-font-weight: 900; -fx-text-fill: -text-main; -fx-font-family: 'Arial Black', sans-serif;" minWidth="-Infinity"/>
+            </HBox>
+            
+            <Region HBox.hgrow="ALWAYS" />
+            
+            <!-- Panel Toggle Buttons -->
+            <HBox alignment="CENTER" spacing="5" minWidth="-Infinity">
+                <ToggleButton fx:id="toggleLeftBtn" text="🗂️ Watchlist" onAction="#handleToggleLeft" styleClass="theme-toggle" style="-fx-padding: 4 10; -fx-font-size: 11px;" selected="true" minWidth="-Infinity"/>
+                <ToggleButton fx:id="toggleRightBtn" text="🤖 AI Co-Pilot" onAction="#handleToggleRight" styleClass="theme-toggle" style="-fx-padding: 4 10; -fx-font-size: 11px;" selected="true" minWidth="-Infinity"/>
+                <ToggleButton fx:id="toggleBottomBtn" text="📊 Strategy Drawer" onAction="#handleToggleBottom" styleClass="theme-toggle" style="-fx-padding: 4 10; -fx-font-size: 11px;" selected="false" minWidth="-Infinity"/>
+            </HBox>
+            
+            <Region HBox.hgrow="ALWAYS" />
+            
+            <!-- Search Bar -->
+            <HBox alignment="CENTER_LEFT" spacing="5" styleClass="search-container" prefWidth="130" minWidth="-Infinity">
+                <SVGPath content="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" style="-fx-fill: -text-muted;"/>
+                <TextField fx:id="searchField" promptText="Search asset..." styleClass="search-field" HBox.hgrow="ALWAYS" onAction="#handleSearch"/>
+            </HBox>
+            
+            <!-- Top Right Controls -->
+            <HBox alignment="CENTER" spacing="8" minWidth="-Infinity">
+                <Button text="⚙️ Settings" onAction="#handleShowSettings" styleClass="theme-toggle" style="-fx-padding: 4 10; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                <ToggleButton fx:id="themeToggle" text="🌙 Theme" onAction="#toggleTheme" styleClass="theme-toggle" style="-fx-padding: 4 10; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                
+                <!-- Luxurious Profile Presentation (No Box/Border) -->
+                <HBox alignment="CENTER" spacing="6" onMouseClicked="#handleShowProfile" style="-fx-background-color: transparent; -fx-padding: 4 6; -fx-cursor: hand;" minWidth="-Infinity">
+                    <StackPane style="-fx-background-color: linear-gradient(to right, #00F0FF, #8B5CF6); -fx-background-radius: 12px; -fx-pref-width: 22px; -fx-pref-height: 22px;">
+                        <Label text="A" style="-fx-text-fill: #0B0F17; -fx-font-weight: bold; -fx-font-size: 12px;"/>
+                    </StackPane>
+                    <Label text="Alisha" style="-fx-text-fill: -text-main; -fx-font-size: 12px; -fx-font-weight: bold;" minWidth="-Infinity"/>
+                    <Label text="●" style="-fx-text-fill: -accent-green; -fx-font-size: 10px;" minWidth="-Infinity">
+                        <tooltip><Tooltip text="Online - Institutional Pro Tier"/></tooltip>
+                    </Label>
+                </HBox>
+                
+                <Button text="Logout" onAction="#handleLogout" styleClass="theme-toggle" style="-fx-border-color: -accent-red; -fx-text-fill: -accent-red; -fx-padding: 4 10; -fx-font-size: 11px;" minWidth="-Infinity"/>
+            </HBox>
+        </HBox>
+    </top>
+
+    <!-- LEFT WING: ALPHA HUB -->
+    <left>
+        <VBox fx:id="leftPanel" spacing="10" styleClass="sidebar" prefWidth="265">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            
+            <HBox alignment="CENTER_LEFT" spacing="8" minWidth="-Infinity">
+                <SVGPath content="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" style="-fx-fill: -accent-cyan;"/>
+                <Label text="Alpha Hub" styleClass="title-label" style="-fx-font-size: 15px;" minWidth="-Infinity"/>
+            </HBox>
+            
+            <!-- Section Tab Selectors -->
+            <HBox spacing="6">
+                <Button fx:id="watchlistTabBtn" text="Watchlist" onAction="#handleShowWatchlistView" styleClass="primary-button" style="-fx-padding: 5 8; -fx-font-size: 11px;" HBox.hgrow="ALWAYS" maxWidth="Infinity" minWidth="-Infinity"/>
+                <Button fx:id="whaleTabBtn" text="🔥 AI Whale Tracker" onAction="#handleShowWhaleTrackerView" styleClass="theme-toggle" style="-fx-padding: 5 8; -fx-font-size: 11px;" HBox.hgrow="ALWAYS" maxWidth="Infinity" minWidth="-Infinity"/>
+            </HBox>
+            
+            <StackPane VBox.vgrow="ALWAYS">
+                <!-- VIEW 1: WATCHLIST -->
+                <VBox fx:id="watchlistContainer" spacing="8" VBox.vgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="Symbol" style="-fx-text-fill: -text-muted; -fx-font-size: 11px; -fx-font-weight: bold;" minWidth="-Infinity"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="Last" style="-fx-text-fill: -text-muted; -fx-font-size: 11px; -fx-font-weight: bold;" minWidth="-Infinity"/>
+                        <Label text="Chg\%" style="-fx-text-fill: -text-muted; -fx-font-size: 11px; -fx-font-weight: bold; -fx-pref-width: 45; -fx-alignment: center-right;" minWidth="-Infinity"/>
+                    </HBox>
+                    <ListView fx:id="watchlistList" VBox.vgrow="ALWAYS" styleClass="list-view"/>
+                </VBox>
+                
+                <!-- VIEW 2: 🔥 AI WHALE TRACKER (Dynamic Light/Dark Mode Supported!) -->
+                <VBox fx:id="whaleTrackerContainer" spacing="10" VBox.vgrow="ALWAYS" visible="false" managed="false" styleClass="whale-container">
+                    <HBox alignment="CENTER_LEFT" spacing="6" minWidth="-Infinity">
+                        <SVGPath content="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" style="-fx-fill: -accent-purple;"/>
+                        <Label text="Institutional Whale Radar" styleClass="ai-title" style="-fx-font-size: 12px; -fx-font-weight: bold;" minWidth="-Infinity"/>
+                    </HBox>
+                    
+                    <Label text="Real-time large block market orders &amp; liquidity absorption by institutional entities." style="-fx-text-fill: -text-muted; -fx-font-size: 10px; -fx-wrap-text: true;"/>
+                    
+                    <!-- Live Sentiment Gauge -->
+                    <VBox spacing="4" styleClass="whale-gauge">
+                        <HBox alignment="CENTER_LEFT">
+                            <Label text="Whale Bullish Pressure" styleClass="whale-card-text" minWidth="-Infinity"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="whalePressureLabel" text="84.2\%" style="-fx-text-fill: -accent-green; -fx-font-size: 11px; -fx-font-weight: bold;" minWidth="-Infinity"/>
+                        </HBox>
+                        <ProgressBar fx:id="whaleProgressBar" progress="0.84" style="-fx-pref-width: 220; -fx-pref-height: 8; -fx-accent: #2EA043;"/>
+                    </VBox>
+                    
+                    <Separator style="-fx-background-color: -border-color;"/>
+                    
+                    <Label text="⚡ Live Block Trades Feed" style="-fx-text-fill: -accent-cyan; -fx-font-size: 11px; -fx-font-weight: bold;" minWidth="-Infinity"/>
+                    
+                    <!-- SCROLLPANE WITH DYNAMIC CSS CLASS -->
+                    <ScrollPane fitToWidth="true" styleClass="whale-scroll" VBox.vgrow="ALWAYS">
+                        <VBox fx:id="whaleFeedVBox" spacing="8" styleClass="whale-feed">
+                            <!-- Solid Dynamic Cards with High-Contrast Text & Sharp Borders -->
+                            <VBox styleClass="whale-card-buy" spacing="3">
+                                <HBox alignment="CENTER_LEFT">
+                                    <Label text="🐳 BUY BLOCK" style="-fx-text-fill: -accent-green; -fx-font-weight: bold; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label text="Just now" style="-fx-text-fill: -text-muted; -fx-font-size: 9px;" minWidth="-Infinity"/>
+                                </HBox>
+                                <Label fx:id="whaleTrade1" text="🐳 \$4.5M BUY on XAUUSD @ \$2,330.50" styleClass="whale-card-text" minWidth="-Infinity"/>
+                                <Label text="Executed via Dark Pool Liquidity" style="-fx-text-fill: -accent-cyan; -fx-font-size: 9px;" minWidth="-Infinity"/>
+                            </VBox>
+                            
+                            <VBox styleClass="whale-card-buy" spacing="3">
+                                <HBox alignment="CENTER_LEFT">
+                                    <Label text="🐳 BUY BLOCK" style="-fx-text-fill: -accent-green; -fx-font-weight: bold; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label text="2m ago" style="-fx-text-fill: -text-muted; -fx-font-size: 9px;" minWidth="-Infinity"/>
+                                </HBox>
+                                <Label fx:id="whaleTrade2" text="🐳 \$2.1M BUY on BTCUSD @ \$64,150.00" styleClass="whale-card-text" minWidth="-Infinity"/>
+                                <Label text="Absorption of Ask Wall" style="-fx-text-fill: -accent-cyan; -fx-font-size: 9px;" minWidth="-Infinity"/>
+                            </VBox>
+                            
+                            <VBox styleClass="whale-card-sell" spacing="3">
+                                <HBox alignment="CENTER_LEFT">
+                                    <Label text="⚠️ SELL WALL" style="-fx-text-fill: -accent-red; -fx-font-weight: bold; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label text="5m ago" style="-fx-text-fill: -text-muted; -fx-font-size: 9px;" minWidth="-Infinity"/>
+                                </HBox>
+                                <Label fx:id="whaleTrade3" text="⚠️ \$1.8M SELL on TSLA @ \$185.20" styleClass="whale-card-text" minWidth="-Infinity"/>
+                                <Label text="Take Profit Order Filled" style="-fx-text-fill: -accent-purple; -fx-font-size: 9px;" minWidth="-Infinity"/>
+                            </VBox>
+                        </VBox>
+                    </ScrollPane>
+                    
+                    <Button text="⚡ Copy Whale Trade (Market BUY)" onAction="#handleCopyWhaleTrade" styleClass="buy-button" style="-fx-padding: 6; -fx-font-size: 11px; -fx-font-weight: bold;" maxWidth="Infinity" minWidth="-Infinity"/>
+                </VBox>
+            </StackPane>
+        </VBox>
+    </left>
+
+    <!-- CENTER CHART CANVAS & TRADINGVIEW-STYLE RESIZABLE SPLITPANE -->
+    <center>
+        <VBox style="-fx-background-color: -bg-base; -fx-padding: 5;">
+            <SplitPane fx:id="centerSplitPane" orientation="VERTICAL" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-padding: 0;">
+                <items>
+                    <!-- Floating Chart Container -->
+                    <VBox styleClass="floating-panel" VBox.vgrow="ALWAYS">
+                        <!-- Top Chart Command Bar -->
+                        <HBox spacing="4" alignment="CENTER_LEFT" style="-fx-padding: 6 10; -fx-border-color: -border-color; -fx-border-width: 0 0 1 0;">
+                            <Label fx:id="currentSymbolLabel" text="XAUUSD" styleClass="symbol-label" style="-fx-font-size: 14px;" minWidth="-Infinity"/>
+                            <Region style="-fx-pref-width: 1; -fx-background-color: -border-color;"/>
+                            
+                            <Label text="Timeframe:" style="-fx-text-fill: -text-muted; -fx-font-weight: bold; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                            <ToggleButton text="1m" fx:id="btn1m" onAction="#handleTimeframe" styleClass="theme-toggle" style="-fx-background-radius: 4; -fx-padding: 2 5; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                            <ToggleButton text="5m" fx:id="btn5m" onAction="#handleTimeframe" styleClass="theme-toggle" style="-fx-background-radius: 4; -fx-padding: 2 5; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                            <ToggleButton text="15m" fx:id="btn15m" onAction="#handleTimeframe" styleClass="theme-toggle" style="-fx-background-radius: 4; -fx-padding: 2 5; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                            <ToggleButton text="1H" fx:id="btn1h" onAction="#handleTimeframe" styleClass="theme-toggle" style="-fx-background-radius: 4; -fx-padding: 2 5; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                            <ToggleButton text="1D" fx:id="btn1d" onAction="#handleTimeframe" styleClass="theme-toggle" style="-fx-background-radius: 4; -fx-padding: 2 5; -fx-font-size: 11px;" selected="true" minWidth="-Infinity"/>
+                            
+                            <Region style="-fx-pref-width: 1; -fx-background-color: -border-color;"/>
+                            <Button text="Bars" onAction="#handleChartStyle" styleClass="theme-toggle" style="-fx-background-radius: 4; -fx-padding: 2 5; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                            
+                            <Region HBox.hgrow="ALWAYS" />
+                            
+                            <!-- Advanced Indicators Menu -->
+                            <Label text="fx Indicators" style="-fx-text-fill: -accent-cyan; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 0 2 0 0;" minWidth="-Infinity"/>
+                            <MenuButton fx:id="indicatorMenuButton" text="Select Indicator" styleClass="theme-toggle" style="-fx-background-radius: 4; -fx-padding: 2 6; -fx-font-size: 11px;" minWidth="-Infinity">
+                                <items>
+                                    <CheckMenuItem text="EMA 50" onAction="#handleToggleIndicator"/>
+                                    <CheckMenuItem text="EMA 100" onAction="#handleToggleIndicator"/>
+                                    <CheckMenuItem text="EMA 150" onAction="#handleToggleIndicator"/>
+                                    <CheckMenuItem text="EMA 200" onAction="#handleToggleIndicator"/>
+                                    <SeparatorMenuItem />
+                                    <CheckMenuItem text="ICT (FVG + OB)" onAction="#handleToggleIndicator"/>
+                                </items>
+                            </MenuButton>
+                            
+                            <Region style="-fx-pref-width: 1; -fx-background-color: -border-color;"/>
+                            <Button text="Fullscreen" onAction="#handleFullscreen" styleClass="theme-toggle" style="-fx-background-radius: 4; -fx-padding: 2 6; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                        </HBox>
+                        
+                        <StackPane VBox.vgrow="ALWAYS">
+                            <WebView fx:id="chartWebView" />
+                            
+                            <!-- Floating Drawing Tools Overlay Pill -->
+                            <HBox alignment="CENTER" spacing="3" styleClass="floating-card" style="-fx-background-color: rgba(22, 27, 34, 0.85); -fx-border-color: -border-color; -fx-padding: 2 6; -fx-max-height: 30; -fx-max-width: 210;" StackPane.alignment="TOP_LEFT">
+                                <StackPane.margin><Insets top="10" left="10"/></StackPane.margin>
+                                <ToggleButton styleClass="icon-button" onAction="#handleCrosshairTool" selected="true" style="-fx-padding: 3;">
+                                    <tooltip><Tooltip text="Crosshair"/></tooltip>
+                                    <graphic><SVGPath content="M12 2v20M2 12h20" style="-fx-stroke: -text-muted; -fx-stroke-width: 2; -fx-stroke-line-cap: ROUND;"/></graphic>
+                                </ToggleButton>
+                                <ToggleButton styleClass="icon-button" onAction="#handleLineTool" style="-fx-padding: 3;">
+                                    <tooltip><Tooltip text="Trend Line"/></tooltip>
+                                    <graphic><SVGPath content="M4 20L20 4" style="-fx-stroke: -text-muted; -fx-stroke-width: 2; -fx-stroke-line-cap: ROUND;"/></graphic>
+                                </ToggleButton>
+                                <ToggleButton styleClass="icon-button" onAction="#handleFiboTool" style="-fx-padding: 3;">
+                                    <tooltip><Tooltip text="Fibonacci Retracement"/></tooltip>
+                                    <graphic><SVGPath content="M4 4h16M4 10h16M4 16h16M4 22h16" style="-fx-stroke: -text-muted; -fx-stroke-width: 2; -fx-stroke-line-cap: ROUND;"/></graphic>
+                                </ToggleButton>
+                                <ToggleButton styleClass="icon-button" onAction="#handleRectTool" style="-fx-padding: 3;">
+                                    <tooltip><Tooltip text="Rectangle"/></tooltip>
+                                    <graphic><SVGPath content="M4 6h16v12H4z" style="-fx-stroke: -text-muted; -fx-stroke-width: 2; -fx-fill: transparent; -fx-stroke-line-cap: ROUND;"/></graphic>
+                                </ToggleButton>
+                                <ToggleButton styleClass="icon-button" onAction="#handleTextTool" style="-fx-padding: 3;">
+                                    <tooltip><Tooltip text="Text Marker"/></tooltip>
+                                    <graphic><SVGPath content="M4 6V4h16v2M12 4v16" style="-fx-stroke: -text-muted; -fx-stroke-width: 2; -fx-stroke-line-cap: ROUND;"/></graphic>
+                                </ToggleButton>
+                                <Button styleClass="icon-button" onAction="#handleClearDrawings" style="-fx-padding: 3;">
+                                    <tooltip><Tooltip text="Remove Drawings"/></tooltip>
+                                    <graphic><SVGPath content="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" style="-fx-fill: -text-muted;"/></graphic>
+                                </Button>
+                            </HBox>
+                            
+                            <VBox fx:id="loadingOverlay" alignment="CENTER" spacing="15" style="-fx-background-color: -bg-base;">
+                                <ProgressIndicator />
+                                <Label text="Initializing Quantum AI Engine..." style="-fx-text-fill: -text-muted; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                            </VBox>
+                        </StackPane>
+                    </VBox>
+                    
+                    <!-- BOTTOM CONSOLE: RESIZABLE TRADINGVIEW-STYLE DRAWER -->
+                    <VBox fx:id="bottomDrawer" styleClass="floating-panel" VBox.vgrow="ALWAYS" visible="false" managed="false" prefHeight="240">
+                        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 6 10; -fx-background-color: -bg-card; -fx-background-radius: 10 10 0 0; -fx-border-color: -border-color; -fx-border-width: 0 0 1 0;">
+                            <SVGPath content="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" style="-fx-fill: -accent-cyan;"/>
+                            <Label text="Active Strategy Orders" styleClass="section-title" style="-fx-font-size: 12px;" minWidth="-Infinity"/>
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Button text="Bar Replay" onAction="#handleShowReplay" styleClass="theme-toggle" style="-fx-border-color: -accent-cyan; -fx-text-fill: -accent-cyan; -fx-padding: 2 8; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                            <Button text="Liquidate All" onAction="#handleLiquidateAll" styleClass="theme-toggle" style="-fx-background-color: rgba(248,81,73,0.2); -fx-border-color: -accent-red; -fx-text-fill: -accent-red; -fx-padding: 2 8; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                            <Button text="✖ Close" onAction="#handleToggleBottomClose" styleClass="theme-toggle" style="-fx-padding: 2 6; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                        </HBox>
+                        
+                        <!-- FULL WIDTH TABLE CONTAINER -->
+                        <VBox spacing="4" style="-fx-padding: 8; -fx-background-color: -bg-panel;" VBox.vgrow="ALWAYS">
+                            <TableView fx:id="historyTable" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-pref-height: 190px;">
+                                <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY" /></columnResizePolicy>
+                                <columns>
+                                    <TableColumn fx:id="colTime" text="Time" prefWidth="140" />
+                                    <TableColumn fx:id="colSymbol" text="Symbol" prefWidth="80" />
+                                    <TableColumn fx:id="colType" text="Type" prefWidth="60" />
+                                    <TableColumn fx:id="colQty" text="Qty" prefWidth="70" />
+                                    <TableColumn fx:id="colPrice" text="Price" prefWidth="110" />
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </VBox>
+                </items>
+            </SplitPane>
+        </VBox>
+    </center>
+
+    <!-- RIGHT WING: AI CO-PILOT CHATBOT & RISK GUARDIAN -->
+    <right>
+        <VBox fx:id="rightPanel" styleClass="right-panel" prefWidth="275" spacing="8">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            
+            <!-- AI Co-Pilot Header -->
+            <HBox alignment="CENTER_LEFT" spacing="6" minWidth="-Infinity">
+                <SVGPath content="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" style="-fx-fill: -accent-purple;"/>
+                <Label text="AI Co-Pilot Chatbot" styleClass="title-label" style="-fx-font-size: 14px;" minWidth="-Infinity"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="ONLINE" styleClass="ai-pill" style="-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: -accent-purple;" minWidth="-Infinity"/>
+                <Button text="✖" onAction="#handleToggleRightClose" styleClass="theme-toggle" style="-fx-padding: 2 5; -fx-font-size: 10px;" minWidth="-Infinity"/>
+            </HBox>
+            
+            <!-- AI Chatbot Message History -->
+            <VBox spacing="5" styleClass="floating-card" style="-fx-border-color: rgba(139, 92, 246, 0.4); -fx-padding: 8;" VBox.vgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" spacing="5" minWidth="-Infinity">
+                    <SVGPath content="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" style="-fx-fill: -accent-purple;"/>
+                    <Label text="Live Quantitative Chat Log" styleClass="ai-title" style="-fx-font-size: 11px;" minWidth="-Infinity"/>
+                </HBox>
+                <ListView fx:id="aiChatListView" styleClass="list-view" style="-fx-background-color: transparent; -fx-pref-height: 160px;" VBox.vgrow="ALWAYS"/>
+                
+                <!-- Chat Input Bar -->
+                <HBox spacing="5" alignment="CENTER_LEFT">
+                    <TextField fx:id="aiPromptField" promptText="Ask AI anything (e.g. Trend?).." styleClass="text-field" style="-fx-padding: 4 6; -fx-font-size: 11px;" HBox.hgrow="ALWAYS" onAction="#handleSendAIChat"/>
+                    <Button text="🚀" onAction="#handleSendAIChat" styleClass="ai-button" style="-fx-padding: 4 8; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                </HBox>
+                
+                <!-- Quick AI Action Chips -->
+                <HBox spacing="4" alignment="CENTER" minWidth="-Infinity">
+                    <Button text="⚡ Analyze" onAction="#handleAIQuickAction" styleClass="theme-toggle" style="-fx-border-color: -accent-purple; -fx-text-fill: -accent-purple; -fx-padding: 2 5; -fx-font-size: 10px;" minWidth="-Infinity"/>
+                    <Button text="🎯 ICT FVG" onAction="#handleAIQuickAction" styleClass="theme-toggle" style="-fx-border-color: -accent-cyan; -fx-text-fill: -accent-cyan; -fx-padding: 2 5; -fx-font-size: 10px;" minWidth="-Infinity"/>
+                    <Button text="📊 Macro" onAction="#handleAIQuickAction" styleClass="theme-toggle" style="-fx-border-color: -accent-green; -fx-text-fill: -accent-green; -fx-padding: 2 5; -fx-font-size: 10px;" minWidth="-Infinity"/>
+                    <Button text="🔮 Predict" onAction="#handleAIQuickAction" styleClass="theme-toggle" style="-fx-border-color: -accent-purple; -fx-text-fill: -text-main; -fx-padding: 2 5; -fx-font-size: 10px;" minWidth="-Infinity"/>
+                </HBox>
+            </VBox>
+            
+            <Separator style="-fx-background-color: -border-color;"/>
+            
+            <!-- Automated Risk Guardian (Kill-Switch) -->
+            <VBox spacing="6" styleClass="floating-card" style="-fx-border-color: rgba(248, 81, 73, 0.4); -fx-padding: 8;" VBox.vgrow="NEVER">
+                <HBox alignment="CENTER_LEFT" spacing="5" minWidth="-Infinity">
+                    <SVGPath content="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" style="-fx-fill: -accent-red;"/>
+                    <Label text="Risk Guardian (Kill-Switch)" style="-fx-text-fill: -accent-red; -fx-font-weight: bold; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="killSwitchBtn" text="Active" onAction="#handleToggleKillSwitch" styleClass="theme-toggle" style="-fx-background-color: rgba(46,160,67,0.2); -fx-text-fill: -accent-green; -fx-font-size: 10px; -fx-padding: 2 5;" minWidth="-Infinity"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="5" minWidth="-Infinity">
+                    <Label text="Risk Per Trade:" style="-fx-text-fill: -text-muted; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                    <TextField fx:id="riskPercentField" text="1.0" styleClass="text-field" style="-fx-pref-width: 40; -fx-padding: 2 5; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                    <Label text="\%" style="-fx-text-fill: -text-muted; -fx-font-size: 11px;" minWidth="-Infinity"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="riskStatusLabel" text="Safe Status" style="-fx-text-fill: -accent-green; -fx-font-size: 11px; -fx-font-weight: bold;" minWidth="-Infinity"/>
+                </HBox>
+            </VBox>
+            
+            <!-- Order Execution Ticket -->
+            <VBox spacing="8" styleClass="floating-card" style="-fx-background-color: -bg-card; -fx-padding: 10;" VBox.vgrow="NEVER">
+                <HBox alignment="CENTER" minWidth="-Infinity">
+                    <VBox alignment="CENTER" spacing="1">
+                        <Label text="Sell Market" style="-fx-text-fill: -text-muted; -fx-font-size: 10px;" minWidth="-Infinity"/>
+                        <Label fx:id="sellPriceLabel" text="2,000.00" style="-fx-text-fill: -accent-red; -fx-font-size: 16px; -fx-font-weight: bold;" minWidth="-Infinity"/>
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <VBox alignment="CENTER" spacing="1">
+                        <Label text="Buy Market" style="-fx-text-fill: -text-muted; -fx-font-size: 10px;" minWidth="-Infinity"/>
+                        <Label fx:id="buyPriceLabel" text="2,000.00" style="-fx-text-fill: -accent-green; -fx-font-size: 16px; -fx-font-weight: bold;" minWidth="-Infinity"/>
+                    </VBox>
+                </HBox>
+                
+                <VBox spacing="3">
+                    <Label text="Lot Size (Position Sizing Auto-Linked)" style="-fx-text-fill: -text-muted; -fx-font-size: 10px;" minWidth="-Infinity"/>
+                    <HBox spacing="4" minWidth="-Infinity">
+                        <Button text="0.10" onAction="#handleQuickLot" styleClass="theme-toggle" style="-fx-background-radius: 4; -fx-padding: 2 5; -fx-font-size: 10px;" minWidth="-Infinity"/>
+                        <Button text="1.00" onAction="#handleQuickLot" styleClass="theme-toggle" style="-fx-background-radius: 4; -fx-padding: 2 5; -fx-font-size: 10px;" minWidth="-Infinity"/>
+                        <Button text="5.00" onAction="#handleQuickLot" styleClass="theme-toggle" style="-fx-background-radius: 4; -fx-padding: 2 5; -fx-font-size: 10px;" minWidth="-Infinity"/>
+                        <TextField fx:id="quantityField" text="1.0" styleClass="text-field" style="-fx-padding: 2 5; -fx-font-size: 11px;" HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                </VBox>
+                
+                <HBox spacing="8" minWidth="-Infinity">
+                    <Button text="SELL" onAction="#handleSell" styleClass="sell-button" style="-fx-padding: 6; -fx-font-size: 12px;" maxWidth="Infinity" HBox.hgrow="ALWAYS" minWidth="-Infinity"/>
+                    <Button text="BUY" onAction="#handleBuy" styleClass="buy-button" style="-fx-padding: 6; -fx-font-size: 12px;" maxWidth="Infinity" HBox.hgrow="ALWAYS" minWidth="-Infinity"/>
+                </HBox>
+                <Label fx:id="balanceLabel" text="Available Balance: \$100,000.00" style="-fx-text-fill: -text-main; -fx-font-size: 11px; -fx-font-weight: bold; -fx-alignment: center;" maxWidth="Infinity" minWidth="-Infinity"/>
+            </VBox>
+        </VBox>
+    </right>
+</BorderPane>
